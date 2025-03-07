@@ -1,14 +1,13 @@
 #pragma once
 
+#include <concepts>
 #if __cplusplus < 202302L
     #error out of date c++ version, compile with -stdc++=2c
 #endif
 
 #include <cstdint>
-#include <functional>
 #include <ranges>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 namespace unpack_range {
@@ -17,7 +16,7 @@ namespace unpack_range {
             template <bool tp_as_iterators, std::uintmax_t tp_count>
             struct as_elements_or_iterators_fn : std::ranges::range_adaptor_closure<as_elements_or_iterators_fn<tp_as_iterators, tp_count>> {
                 template <std::ranges::input_range tp_input_range_t>
-                requires (std::move_constructible<std::ranges::range_reference_t<tp_input_range_t>>) //not needed if switched to aggregate tuple, as copy elision is garuenteed
+                requires (std::constructible_from<std::ranges::range_value_t<tp_input_range_t>, std::ranges::range_reference_t<tp_input_range_t>>) //not needed if switched to aggregate tuple, as copy elision is garuenteed
                 auto constexpr operator()(tp_input_range_t&& p_range) const -> auto {
                     return []<std::uintmax_t tp_index>(this auto p_self, auto p_current_iterator, auto... p_accumilated_iterators) {
                         if constexpr(tp_index < tp_count) {
@@ -38,7 +37,7 @@ namespace unpack_range {
             template <bool tp_as_iterators, std::uintmax_t tp_count>
             struct as_elements_or_iterators_with_rest_fn : std::ranges::range_adaptor_closure<as_elements_or_iterators_with_rest_fn<tp_as_iterators, tp_count>> {
                 template <std::ranges::input_range tp_input_range_t>
-                requires (std::move_constructible<std::ranges::range_reference_t<tp_input_range_t>>) //not needed if switched to aggregate tuple, as copy elision is garuenteed
+                requires (std::constructible_from<std::ranges::range_value_t<tp_input_range_t>, std::ranges::range_reference_t<tp_input_range_t>>) //not needed if switched to aggregate tuple, as copy elision is garuenteed
                 auto constexpr operator()(tp_input_range_t&& p_range) const -> auto {
                     return []<std::uintmax_t tp_index>(this auto p_self, auto p_end_iterator, auto p_current_iterator, auto... p_accumilated_iterators) {
                         if constexpr(tp_index < tp_count) {
